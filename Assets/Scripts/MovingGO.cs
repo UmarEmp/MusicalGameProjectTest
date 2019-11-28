@@ -11,7 +11,7 @@ public class MovingGO : MonoBehaviour
     void Update()
     {   
        // if()
-        transform.Translate(0, 0, -2f*Time.deltaTime);
+       // transform.Translate(0, 0, -2f*Time.deltaTime);
       /*  if (transform.GetChild(i).transform.position.z < Mathf.Abs(transform.position.z))
         {
             transform.GetChild(i).gameObject.SetActive(false); i++;
