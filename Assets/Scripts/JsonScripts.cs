@@ -3,60 +3,56 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.IO;
+using LitJson;
+using Newtonsoft.Json;
 public class JsonScripts : MonoBehaviour
 {
     public Transform GameManager;
-    public string  json;
-    public int id;
-   
+    public string json;
+    
+    //public int id;
+
     // Start is called before the first frame update
     void Start()
     {
-        
+        CollectInfo();
     }
 
     // Update is called once per frame
-  /*  void Update()
+      void Update()
+      {
+         
+          if (Input.GetKeyDown(KeyCode.L))
+          {
+            Musics m = new Musics();
+            m.Load();
+
+          }
+      }
+
+    void CollectInfo()
     {
-        if (Input.GetKeyDown(KeyCode.S))
-        {
-            CollectInfo();
-        }
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            LoadInfo();
-        }
-    }*/
-    [Serializable]
-    public class MusicalLevel {
-        public Vector3 vecPosition;
-    }
 
-
-
-
-    public void CollectInfo()
-    {
-        MusicalLevel[] musicalLevel = new MusicalLevel[100];
-        for (int i = 0; i < GameManager.childCount; i++)
-        {
-            musicalLevel[i].vecPosition = transform.position;      
-        }
-        json = JsonHelper.ToJson(musicalLevel);
-        File.WriteAllText("C:/save.txt", json);
-        Debug.Log(json);
-    }
-   /* public void LoadInfo()
-    {
+        Debug.Log("prrr");
+        List<Noteposition> notArr = new List<Noteposition>();
         
-        var json1 = File.ReadAllText("C:/save.txt");
-        JsonUtility.FromJson(json, MusicalLevel[0]);
         for (int i = 0; i < GameManager.childCount; i++)
         {
-            GameManager.transform.GetChild(i).transform.position = musicalLevel[i].vecPosition;
+            Noteposition not = new Noteposition(GameManager.transform.GetChild(i).position);
+            //not.vecPosition =  GameManager.transform.GetChild(i).position;
+            Debug.Log(not.vecPosition + " qqq");
+            notArr.Add(not);
         }
-        Debug.Log(json);
-    }*/
+        Debug.Log(notArr.Count+" notArr");
+
+        Musics myMusicObject = new Musics(notArr);
+
+
+
+    }
+    
+
+
     public static class JsonHelper
     {
         public static T[] FromJson<T>(string json)
@@ -85,6 +81,71 @@ public class JsonScripts : MonoBehaviour
             public T[] Items;
         }
     }
-    
 }
+[Serializable]
+public class Musics
+{
+    [SerializeField]
+    public List<Vector3> notposition = new List<Vector3>();
+
+    public Musics(List<Noteposition> notposition)
+    {
+        foreach (Noteposition not in notposition)
+        {
+            this.notposition.Add(not.vecPosition);
+        }
+        string path = Application.persistentDataPath + "/data.json";
+        if (!File.Exists(path))
+        {
+            StreamWriter sw = new StreamWriter(path);
+
+            sw.Close();
+        }
+        JsonData data = new JsonData();
+
+        foreach (Noteposition not in notposition)
+        {
+
+            data.Add(JsonConvert.SerializeObject(not));
+        }
+
+        File.WriteAllText(path, data.ToJson());
+    }
+    public Musics() { }
+    public void Load()
+    {
+        string path = Application.persistentDataPath + "/data.json";
+        if (File.Exists(path))
+        {
+            string json = File.ReadAllText(path);
+            //JsonData data = new JsonData();
+            JsonData data = JsonMapper.ToObject(json);
+            JsonData d =new JsonData();
+            Debug.Log(data.Count + "pr");
+            for (int i = 0; i < data.Count; i++)
+            {
+               // Debug.Log(data[i]);
+            }
+            // float[] ok = new float();
+           // Debug.Log(data[0]);
+           var list = JsonConvert.DeserializeObject<List<Noteposition>>(data.ToJson());
+            //d.Add(JsonConvert.DeserializeObject<List<Noteposition>>(data.ToJson()));
+           // Vector3 vec = list[0].vecPosition.normalized;
+            //Debug.Log(list[0].vecPosition);
+
+        }
+    }
+
+}
+[Serializable]
+public class Noteposition
+{
+    public Vector3 vecPosition;
+    public Noteposition() { }
+    public Noteposition(Vector3 vec)
+    {
+        vecPosition = vec;
+    }
+}
+
 
